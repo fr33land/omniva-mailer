@@ -1,0 +1,275 @@
+openapi: 3.0.1
+info:
+  title: Message API server
+  description: Message API server
+  version: 1.0.0
+servers:
+- url: http://localhost:8081/
+  description: Local dev message API server
+security:
+- accessCode:
+  - read
+  - write
+paths:
+  /email/create:
+    post:
+      operationId: createMessage
+      summary: Creates email message
+      tags: 
+        - Email API
+      description: Email message create API rest endpoint    
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreateRequest'
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageCreateResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "500":
+          $ref: '#/components/responses/InternalError' 
+        "503":
+          $ref: '#/components/responses/ServiceUnavailable'
+  /email/update/{messageId}:
+    put:
+      operationId: editMessage
+      summary: Edit email message
+      tags: 
+        - Email API
+      description: Email message edit API rest endpoint  
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: The messageId ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreateRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "500":
+          $ref: '#/components/responses/InternalError' 
+        "503":
+          $ref: '#/components/responses/ServiceUnavailable'
+  /email/delete/{messageId}:
+    delete:
+      operationId: deleteMessage
+      summary: Delete email message
+      tags: 
+        - Email API
+      description: Email message delete API rest endpoint    
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: The messageId ID
+      responses:
+        "204":
+          description: NoContent
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        "500":
+          $ref: '#/components/responses/InternalError' 
+        "503":
+          $ref: '#/components/responses/ServiceUnavailable'
+  /email/get/{messageId}:
+    get:
+      operationId: getMessage
+      summary: Get submitted email
+      tags: 
+        - Email API
+      description: Get submitted email by message ID   
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          description: The messageId ID
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/InternalError' 
+        "503":
+          $ref: '#/components/responses/ServiceUnavailable'
+  /email/get/all:
+    get:
+      operationId: getAllMessage
+      summary: Get all submitted messages
+      tags: 
+        - Email API
+      description: Get all submitted messages
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponseList'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/InternalError' 
+        "503":
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  responses:
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:
+      description: Service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    MessageCreateRequest:
+      type: object
+      properties:
+        messageReceiver:
+          type: string
+          description: Email message address
+          maxLength: 50
+          format: email
+          example: user@example.com
+          nullable: false
+        messageSubject:
+          type: string
+          description: Message subject
+          maxLength: 128
+          nullable: false
+        message:
+          type: string
+          description: Message
+          maxLength: 500
+          nullable: false
+      required: 
+        - messageReceiver
+        - messageSubject
+        - message
+    MessageCreateResponse:
+      type: object
+      properties:
+        messageId:
+          type: integer
+          format: int64
+          description: Message id
+        links:
+          type: object
+          description: Resource links
+          properties:
+            self:
+              $ref: '#/components/schemas/Link'              
+    MessageResponse:
+      type: object
+      properties:
+        messageId:
+          type: integer
+          format: int64
+        messageReceiver:
+          type: string
+          description: Message address
+        messageSubject:
+          type: string
+          description: Message subject
+        message:
+          type: string
+          description: Message
+        delivered:
+          type: boolean
+          description: Status
+    MessageResponseList:
+      type: array
+      items:
+        $ref: '#/components/schemas/MessageResponse'
+    Link:
+      description: HATEOAS-style links to avoid building URLs
+      type: object
+      properties:
+        href:
+          description: The URL of the link.
+          type: string
+          minLength: 1
+          maxLength: 2000
+    ErrorResponse:
+      type: object
+      properties:
+        timeStamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+  securitySchemes:
+    accessCode:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: http://example.com/oauth/auth
+          tokenUrl: http://example.com/oauth/token
+          scopes:
+            write: allows modifying resources
+            read: allows reading resources

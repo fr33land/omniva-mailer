@@ -1,0 +1,39 @@
+---
+debug: false
+
+server:
+    port: 8081
+    
+spring:
+    application:
+        name: omniva-mailer
+    mail:
+        host: 127.0.0.1
+        password: omniva
+        port: 25
+        username: omniva@omniva.lt
+        sender: omniva@omniva.lt
+    datasource:
+        url: jdbc:postgresql://localhost:5432/omniva
+        username: omniva
+        password: omniva
+        driverClassName: org.postgresql.Driver
+    jpa:
+        show-sql: false
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                ddl-auto: none
+                    
+springdoc:
+    api-docs:
+        path: /api-docs
+    swagger-ui:
+        url: /api-docs/email_server_api-1.0.0.yaml
+        
+flyway:
+   url: jdbc:postgresql://localhost:5432/omniva
+   schemas: omniva
+   user: omniva
+   password: omniva
+   location: classpath:db/migration
