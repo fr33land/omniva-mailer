@@ -28,7 +28,7 @@ public class EmailService {
     }
 
     public void sendEmail(MimeMessagePreparator email) {
-        //mailSender.send(email);
+        mailSender.send(email);
     }
 
     public void prepareAndSend(Messages email) {
